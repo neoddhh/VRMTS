@@ -1,0 +1,48 @@
+{
+  "name": "instructor-dashboard",
+  "version": "1.0.0",
+  "description": "军训VR射击训练 — 教官端桌面控制程序",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder --win",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "author": "MilitaryVR Training System",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "xlsx": "^0.18.5"
+  },
+  "build": {
+    "appId": "com.militaryvr.instructor",
+    "productName": "Instructor Dashboard",
+    "directories": {
+      "output": "dist2"
+    },
+    "win": {
+      "target": ["portable"],
+      "icon": "src/assets/icon.png"
+    },
+    "portable": {
+      "artifactName": "InstructorDashboard.exe"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "data/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "data",
+        "to": "data"
+      }
+    ]
+  }
+}

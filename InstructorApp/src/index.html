@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instructor Dashboard</title>
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+
+<!-- ═══ CUSTOM TITLEBAR ═══ -->
+<div class="titlebar">
+  <div class="titlebar-left">
+    <img src="assets/icon.png" class="titlebar-icon" alt="">
+    <span class="titlebar-title">INSTRUCTOR DASHBOARD</span>
+  </div>
+  <div class="titlebar-controls">
+    <button class="titlebar-btn" onclick="api.win.minimize()">─</button>
+    <button class="titlebar-btn" onclick="api.win.maximize()">☐</button>
+    <button class="titlebar-btn close" onclick="api.win.close()">✕</button>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="login-page hidden" id="loginPage">
+  <div class="login-bg-grid"></div>
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="assets/icon.png" alt="Logo">
+      <h1>INSTRUCTOR</h1>
+      <p data-i18n="login_subtitle">VR Military Training · Instructor Console</p>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="login_account">ACCOUNT</label>
+      <input type="text" class="form-input" id="loginUser" placeholder="Enter account" data-i18n-ph="login_account_ph" autofocus>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="login_password">PASSWORD</label>
+      <input type="password" class="form-input" id="loginPass" placeholder="Enter password" data-i18n-ph="login_password_ph">
+    </div>
+    <button class="btn btn-primary full mt-8" id="loginBtn">ENTER SYSTEM</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ═══ CONNECTION MODE SELECTION ═══ -->
+<div class="login-page" id="connModePage" style="display:flex">
+  <div class="login-bg-grid"></div>
+  <div class="login-card" style="width:580px;padding:36px 32px">
+    <div class="login-logo" style="margin-bottom:20px">
+      <h1 style="font-size:16px">CONNECTION MODE</h1>
+      <p data-i18n="conn_subtitle">Select how to communicate with VR client</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr;gap:12px">
+      <!-- Network Mode -->
+      <button class="btn" style="padding:20px;text-align:left;display:flex;align-items:center;gap:16px" onclick="selectConnMode('network')">
+        <div style="font-size:36px;width:50px;text-align:center">🌐</div>
+        <div style="flex:1">
+          <div class="fw-bold" style="font-size:15px" data-i18n="conn_network">Network (WiFi / LAN)</div>
+          <div class="text-sm text-dim" style="margin-top:4px" data-i18n="conn_network_desc">Connect via IP address · Cross-device communication</div>
+          <div class="text-sm" style="margin-top:4px;color:var(--yellow)">⚠ May trigger Windows Firewall prompt</div>
+        </div>
+      </button>
+      <!-- Unity Editor Mode -->
+      <button class="btn btn-primary" style="padding:20px;text-align:left;display:flex;align-items:center;gap:16px" onclick="selectConnMode('localhost')">
+        <div style="font-size:36px;width:50px;text-align:center">🖥️</div>
+        <div style="flex:1">
+          <div class="fw-bold" style="font-size:15px" data-i18n="conn_unity">Unity Editor (Localhost)</div>
+          <div class="text-sm text-dim" style="margin-top:4px" data-i18n="conn_unity_desc">Same machine · Unity Play Mode · No firewall</div>
+          <div class="text-sm" style="margin-top:4px;color:var(--green)">✓ Recommended for development</div>
+        </div>
+      </button>
+      <!-- Packaged Build (disabled) -->
+      <button class="btn" style="padding:16px;text-align:left;display:flex;align-items:center;gap:16px;opacity:0.35;cursor:not-allowed" disabled>
+        <div style="font-size:36px;width:50px;text-align:center">📦</div>
+        <div style="flex:1">
+          <div class="fw-bold" style="font-size:15px" data-i18n="conn_package">Packaged Build</div>
+          <div class="text-sm text-dim" style="margin-top:4px" data-i18n="conn_package_desc">Connect to standalone VR application</div>
+          <div class="text-sm" style="margin-top:4px;color:var(--text-2)" data-i18n="coming_soon">Coming Soon</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODE SELECTION (trainee count) ═══ -->
+<div class="login-page" id="modeSelectPage" style="display:none">
+  <div class="login-bg-grid"></div>
+  <div class="login-card" style="width:540px;padding:36px 32px">
+    <div class="login-logo" style="margin-bottom:20px">
+      <h1 style="font-size:16px">SELECT TRAINEE COUNT</h1>
+      <p data-i18n="mode_subtitle">Select number of trainees</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <!-- Solo Training - 主要训练模式 -->
+      <button class="btn btn-primary" style="padding:20px;flex-direction:column" onclick="confirmMode(1)">
+        <div style="font-size:32px">👤</div>
+        <div class="mt-8 fw-bold" data-i18n="mode_solo">Solo Training</div>
+        <div class="text-sm text-dim" data-i18n="mode_solo_desc">1 Trainee Mode</div>
+      </button>
+
+      <!-- Custom Count - 模拟展示用 -->
+      <button class="btn" style="padding:20px;flex-direction:column" onclick="confirmCustomMode()">
+        <div style="font-size:32px">⚡</div>
+        <div class="mt-8 fw-bold" data-i18n="mode_custom">Custom Count</div>
+        <div class="text-sm text-dim" style="margin-bottom:8px" data-i18n="mode_custom_desc">For Simulation Display</div>
+        <input type="number" class="form-input" id="customModeInput" style="width:100%;padding:6px;text-align:center" placeholder="Enter count" data-i18n-ph="mode_custom_ph" min="1" max="60" value="10" onclick="event.stopPropagation()">
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SUBJECT SELECTION (only shooting range) ═══ -->
+<div class="login-page" id="subjectSelectPage" style="display:none">
+  <div class="login-bg-grid"></div>
+  <div class="login-card" style="width:540px;padding:36px 32px">
+    <div class="login-logo" style="margin-bottom:20px">
+      <h1 style="font-size:16px">SELECT TRAINING SUBJECT</h1>
+      <p data-i18n="subject_subtitle">Choose training module</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr;gap:12px">
+      <button class="btn btn-primary" style="padding:24px;flex-direction:column" onclick="confirmSubject('shooting_range')">
+        <div style="font-size:40px">🎯</div>
+        <div class="mt-8 fw-bold" style="font-size:18px" data-i18n="subject_shooting">Shooting Range</div>
+        <div class="text-sm" style="opacity:0.7">INDOOR SHOOTING RANGE</div>
+      </button>
+      <button class="btn" style="padding:16px;flex-direction:column;opacity:0.35;cursor:not-allowed" disabled>
+        <div style="font-size:28px">🌲</div>
+        <div class="mt-8 fw-bold" data-i18n="subject_outdoor">Outdoor Shooting</div>
+        <div class="text-sm text-dim" data-i18n="coming_soon">Coming Soon</div>
+      </button>
+      <button class="btn" style="padding:16px;flex-direction:column;opacity:0.35;cursor:not-allowed" disabled>
+        <div style="font-size:28px">💣</div>
+        <div class="mt-8 fw-bold" data-i18n="subject_grenade">Grenade Throw</div>
+        <div class="text-sm text-dim" data-i18n="coming_soon">Coming Soon</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WEAPON SELECTION ═══ -->
+<div class="login-page" id="weaponSelectPage" style="display:none">
+  <div class="login-bg-grid"></div>
+  <div class="login-card" style="width:720px;padding:36px 32px">
+    <div class="login-logo" style="margin-bottom:16px">
+      <h1 style="font-size:16px">SELECT WEAPON</h1>
+      <p data-i18n="weapon_subtitle">Choose weapon for this session</p>
+    </div>
+    <div id="weaponGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+    <div style="margin-top:20px;display:flex;gap:12px;justify-content:center">
+      <button class="btn" style="padding:12px 32px" onclick="backToSubject()" data-i18n="btn_go_back">← Back</button>
+      <button class="btn btn-primary" id="startTrainingBtn" style="padding:12px 48px;font-size:16px;opacity:0.4;cursor:not-allowed" disabled onclick="startTraining()" data-i18n="btn_start_training">
+        🚀 Start Training
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP (hidden until login) ═══ -->
+<div class="app" id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">CONTROL CENTER</div>
+      <div class="sidebar-sub" data-i18n="sidebar_sub">Instructor Console v1.0</div>
+    </div>
+    <div class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span><span data-i18n="nav_dashboard">Overview</span></div>
+    <div class="nav-item" data-page="tasks"><span class="nav-icon">📝</span><span data-i18n="nav_tasks">Tasks</span></div>
+    <div class="nav-item" data-page="training"><span class="nav-icon">🎯</span><span data-i18n="nav_training">Training</span><span class="nav-badge" id="navTrainBadge">0</span></div>
+    <div class="nav-item" data-page="adaptive"><span class="nav-icon">🧬</span><span data-i18n="nav_adaptive">Biometric</span></div>
+    <div class="nav-item" data-page="devices"><span class="nav-icon">📡</span><span data-i18n="nav_devices">Devices</span></div>
+    <div class="nav-item" data-page="students"><span class="nav-icon">👥</span><span data-i18n="nav_students">Students</span></div>
+    <div class="nav-item" data-page="archives"><span class="nav-icon">📁</span><span data-i18n="nav_archives">Archives</span></div>
+    <div class="nav-item" data-page="results"><span class="nav-icon">📊</span><span data-i18n="nav_results">Results</span></div>
+    <div class="nav-item" data-page="settings"><span class="nav-icon">⚙</span><span data-i18n="nav_settings">Settings</span></div>
+    <div class="sidebar-footer">
+      <div class="text-sm">WebSocket Server</div>
+      <div class="ws-indicator"><div class="ws-dot-sm" id="sidebarWsDot"></div><span id="sidebarWsLabel" class="text-sm" data-i18n="ws_waiting">Waiting</span></div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content" id="contentArea"></main>
+</div>
+
+<!-- Results Modals (root level for z-index) -->
+<div class="modal-overlay" id="resEntryModal">
+  <div class="modal" style="max-width:650px">
+    <div class="modal-title" id="resEntryTitle">＋ Add Student Score</div>
+    <input type="hidden" id="resEditSid">
+    <div class="grid-2 gap-8">
+      <div class="form-group"><label class="form-label">Student ID *</label><input class="form-input" id="resSid" placeholder="e.g. JAI-2301-01"></div>
+      <div class="form-group"><label class="form-label">Name *</label><input class="form-input" id="resName"></div>
+    </div>
+    <div class="fw-bold text-sm mt-8 mb-4" style="color:var(--cyan)">📝 Written Tests (Questionnaires)</div>
+    <div class="grid-3 gap-8">
+      <div class="form-group"><label class="form-label">STAI-S (20-80)</label><input class="form-input" id="resSTAI" type="number" min="20" max="80" step="0.1"></div>
+      <div class="form-group"><label class="form-label">UEQ (-3~3)</label><input class="form-input" id="resUEQ" type="number" min="-3" max="3" step="0.01"></div>
+      <div class="form-group"><label class="form-label">SSQ (0-235)</label><input class="form-input" id="resSSQ" type="number" min="0" max="235" step="0.1"></div>
+    </div>
+    <div class="fw-bold text-sm mt-8 mb-4" style="color:var(--green)">🎯 VR Training Data</div>
+    <div class="grid-3 gap-8">
+      <div class="form-group"><label class="form-label">Accuracy %</label><input class="form-input" id="resAcc" type="number" min="0" max="100"></div>
+      <div class="form-group"><label class="form-label">Breath Sync %</label><input class="form-input" id="resBreath" type="number" min="0" max="100"></div>
+      <div class="form-group"><label class="form-label">Posture %</label><input class="form-input" id="resPosture" type="number" min="0" max="100"></div>
+      <div class="form-group"><label class="form-label">Avg HR (BPM)</label><input class="form-input" id="resHR" type="number" min="40" max="200"></div>
+      <div class="form-group"><label class="form-label">Level (1-3)</label><input class="form-input" id="resLevel" type="number" min="1" max="3" value="2"></div>
+      <div class="form-group"><label class="form-label">Sessions</label><input class="form-input" id="resSessions" type="number" min="1" max="99" value="1"></div>
+    </div>
+    <div class="flex-row gap-8 mt-16" style="justify-content:flex-end">
+      <button class="btn btn-sm" onclick="closeResEntryModal()">Cancel</button>
+      <button class="btn btn-sm btn-primary" onclick="saveResEntry()">💾 Save</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="resNewProjectModal">
+  <div class="modal" style="max-width:450px">
+    <div class="modal-title">📁 New Project</div>
+    <div class="form-group"><label class="form-label">Project Name *</label><input class="form-input" id="newProjName" placeholder="e.g. VR Military Training 2026"></div>
+    <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="newProjDate" type="date"></div>
+    <div class="flex-row gap-8 mt-16" style="justify-content:flex-end">
+      <button class="btn btn-sm" onclick="document.getElementById('resNewProjectModal').classList.remove('active')">Cancel</button>
+      <button class="btn btn-sm btn-primary" onclick="createNewProject()">Create</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/pages.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
